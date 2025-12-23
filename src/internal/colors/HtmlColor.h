@@ -27,9 +27,43 @@ License along with NeoPixel.  If not, see
 
 #define MAX_HTML_COLOR_NAME_LEN 21
 
-#ifndef pgm_read_ptr
-// ESP8266 doesn't define this macro
-#define pgm_read_ptr(addr) (*reinterpret_cast<const void* const *>(addr))
+#include <string.h>
+#include <ctype.h>
+#include <stdint.h>
+
+// For non-AVR platforms (ESP32/ESP8266) override AVR pgmspace macros
+#if !defined(__AVR__)
+    #ifdef pgm_read_ptr
+        #undef pgm_read_ptr
+    #endif
+    #define pgm_read_ptr(addr) (*reinterpret_cast<const void* const *>(addr))
+
+    #ifdef pgm_read_byte
+        #undef pgm_read_byte
+    #endif
+    #define pgm_read_byte(addr) (*(const unsigned char *)(addr))
+
+    #ifdef pgm_read_word
+        #undef pgm_read_word
+    #endif
+    #define pgm_read_word(addr) (*(const uint16_t *)(addr))
+
+    #ifdef pgm_read_dword
+        #undef pgm_read_dword
+    #endif
+    #define pgm_read_dword(addr) (*(const uint32_t *)(addr))
+
+    #ifdef strncpy_P
+        #undef strncpy_P
+    #endif
+    #define strncpy_P(dest, src, n) strncpy((dest), (src), (n))
+
+    #ifdef strlen_P
+        #undef strlen_P
+    #endif
+    #define strlen_P(s) strlen((s))
+#else
+// AVR platforms should keep their pgmspace definitions
 #endif
 
 // ------------------------------------------------------------------------
